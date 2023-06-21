@@ -13,7 +13,7 @@ setup(
         author_email="<iagoo.felipe123@gmail.com>",
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
-        packages=find_packages(),
+        packages=find_packages('.'),
         install_requires=[], # adicione outros pacotes que 
         # precisem ser instalados com o seu pacote. Ex: 'caer'
         
