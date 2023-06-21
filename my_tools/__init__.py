@@ -2,13 +2,14 @@
 import sys, os, subprocess, json
 import win32com.shell.shell as shell
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __path__ = os.path.abspath('')
-__all__ = ('File', 'encode', 'Cpf', 'adm', 'Registros')
+__all__ = ('File', 'encode', 'Cpf', 'adm', 'Registros', 'resource_path')
 
 """ 
 Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .json, .csv, manipulação de registros Windows e mais.
 
+    - resource_path
     - encode
     - adm
     - Cpf
@@ -23,6 +24,17 @@ Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .jso
 
 
 """
+#-----------------------------------RESOURCE-PATH-----------------------------------------------------
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+#------------------------------------------------------------------------------------------------------
 #----------------------------------------ENCODE--------------------------------------------------------
 def encode(name, upper=False) -> str:
     from unicodedata import normalize
