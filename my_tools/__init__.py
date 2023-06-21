@@ -6,4 +6,4 @@ from my_tools.__Registros import Registros
 
 __all__ = ('File', 'encode', 'Cpf', 'adm', 'Registros')
 
-""" armazenar pasta em C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python311\Lib\site-packages """
+r""" armazenar pasta em C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python311\Lib\site-packages """

@@ -1,4 +1,8 @@
 # my_tools
 Armazena ferramentas que otimizam o código, útil para edição de arquivos, acesso a registros do Windows e mais.
 
-Recomendável utilizar como módulo python, armazenando em Lib\site-packagens
+- Instalação:
+  -
+    ```cmd
+    pip install git+https://github.com/iagoofelipe/my_tools.git
+    ```
