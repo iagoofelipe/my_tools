@@ -1,4 +1,4 @@
-from my_tools.__adm import adm
+from my_tools.src.adm import adm
 import subprocess, os
 
 # KEYNAME =  r'HKEY_LOCAL_MACHINE\SOFTWARE\CentralSuporte'

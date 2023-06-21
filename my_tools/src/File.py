@@ -16,27 +16,26 @@ Funções para manipulação de arquivos
 import json, os
 from os.path import exists
 
+__path__ = os.path.abspath('')
+
 class File:
-    def __init__(self):
-        self._path = os.path.abspath('')
-
-
-    def isFile(self, fileName, default_dir=False) -> bool:
+    @staticmethod
+    def isFile(fileName, default_dir=False) -> bool:
         """Verifica se arquivo existe. 
         \ndefault_dir utilizado caso __class__.path esteja definido
         """
         if default_dir:
-            fileName = f'{self._path}\\{fileName}'
+            fileName = f'{__path__}\\{fileName}'
 
         return exists(fileName)
 
-
-    def getFile(self, fileName: str, default_dir=False) -> list | None:
+    @staticmethod
+    def getFile(fileName: str, default_dir=False) -> list | None:
         """ lendo arquivos e retornando lista com dados """
         file_type = fileName.split('.')[-1]
-        if default_dir: fileName = f'{self._path}\\{fileName}'
+        if default_dir: fileName = f'{__path__}\\{fileName}'
 
-        if not self.isFile(fileName):
+        if not __class__.isFile(fileName):
             return None
         
         if file_type == 'json':
@@ -60,7 +59,8 @@ class File:
         return None # em caso de exceção UnicodeDecodeError ou tipo de arquivo não ser compatível
 
 
-    def toFile(self, fileName: str, dados: list | dict | tuple, default_dir=False) -> None:
+    @staticmethod
+    def toFile(fileName: str, dados: list | dict | tuple, default_dir=False) -> None:
         """ 
         gera arquivo com dados informados, substitui o arquivo caso já exista.
 
@@ -69,7 +69,7 @@ class File:
         """
         file_type = fileName.split('.')[-1]
         
-        if default_dir: fileName = f'{self._path}\\{fileName}'
+        if default_dir: fileName = f'{__path__}\\{fileName}'
 
         if file_type == 'json':
             with open(fileName, 'w', encoding='utf8') as f:
@@ -97,21 +97,23 @@ class File:
                     arquivo.write(str(dados) + '\n')
 
 
-    def delFile(self, fileName: str, default_dir=False) -> bool:
+    @staticmethod
+    def delFile(fileName: str, default_dir=False) -> bool:
         """ remove arquivo/pasta especificada """
-        if default_dir: fileName = f'{self._path}\\{fileName}'
+        if default_dir: fileName = f'{__path__}\\{fileName}'
         
-        if not self.isFile(fileName):
+        if not __class__.isFile(fileName):
             return None
 
         return not bool(os.system('rmdir /s /q ' + fileName))
 
 
-    def appendFile(self, fileName: str, dados: str | list | tuple, default_dir=False) -> bool:
+    @staticmethod
+    def appendFile(fileName: str, dados: str | list | tuple, default_dir=False) -> bool:
         if type(dados) not in (str, list, tuple):
             return False
 
-        if default_dir: fileName = f'{self._path}\\{fileName}'
+        if default_dir: fileName = f'{__path__}\\{fileName}'
 
         with open(fileName, 'a') as f:
             if type(dados) == str:
