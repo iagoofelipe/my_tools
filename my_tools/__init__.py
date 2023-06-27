@@ -120,7 +120,7 @@ class Registros:
             kwargs = kwargs['dict']
 
         for nome, dados in kwargs.items():
-            os.system(f'reg add {KEYNAME} /v {str(nome)} /d "{str(dados)}" /f')
+            os.system(f'reg add {KEYNAME} /v {str(nome)} /d "{str(dados)} " /f')
             
             if adm_exe:
                 adm()
