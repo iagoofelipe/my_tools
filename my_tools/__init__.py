@@ -100,7 +100,7 @@ class Registros:
     """ Dados armazenados no Editor de Registro do Windows """
     def get(KEYNAME=KEYNAME, nome='all') -> dict | str:
         """ lendo dados de registro """
-        output = subprocess.check_output(rf'reg query {KEYNAME}').decode(errors='ignore').replace(f'\r\n{KEYNAME}\r\n    ', '').split('\r\n')
+        output = subprocess.check_output(rf'reg query {KEYNAME}').decode(errors='ignore').split('\r\n')
         historico_de_registros = {}
 
         for linha in output[2:]:
