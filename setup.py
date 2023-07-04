@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.0.0' 
+VERSION = '1.0.1' 
 DESCRIPTION = 'Conjunto de ferramentas Python'
 LONG_DESCRIPTION = 'Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .json, .csv, manipulação de registros Windows e mais.'
 
