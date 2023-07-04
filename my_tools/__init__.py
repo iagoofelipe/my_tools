@@ -2,7 +2,6 @@
 import sys, os, subprocess, json
 import win32com.shell.shell as shell
 
-__version__ = '1.0.1'
 __path__ = os.path.abspath('')
 __all__ = ('File', 'encode', 'Cpf', 'adm', 'Registros', 'resource_path')
 
@@ -24,6 +23,31 @@ Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .jso
 
 
 """
+
+def get_cfg(fileName=r'\\TRUENAS\suporte\SUPORTE\CentralSuporte\settings.cfg'):
+    import configparser
+
+    config = configparser.ConfigParser()
+    config.read(fileName)
+    
+    return config.defaults()
+
+#--------------------------------------WIN-PATH--------------------------------------------------------
+def _winreg(nome):
+    from winreg import OpenKey, QueryValueEx, HKEY_CURRENT_USER, KEY_ALL_ACCESS
+    
+    key = OpenKey(HKEY_CURRENT_USER, r'Volatile Environment', 0, KEY_ALL_ACCESS)
+    return QueryValueEx(key, nome)[0]
+
+reg_windows = dict(
+    APPDATA = _winreg('APPDATA'),
+    HOMEPATH = _winreg('HOMEPATH'),
+    DESKTOP = _winreg('USERPROFILE') + r'\desktop',
+    LOCALAPPDATA = _winreg('LOCALAPPDATA'),
+    USERNAME = _winreg('USERNAME'),
+    USERPROFILE = _winreg('USERPROFILE'),
+)
+#------------------------------------------------------------------------------------------------------
 #-----------------------------------RESOURCE-PATH-----------------------------------------------------
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -100,7 +124,7 @@ class Registros:
     """ Dados armazenados no Editor de Registro do Windows """
     def get(KEYNAME=KEYNAME, nome='all') -> dict | str:
         """ lendo dados de registro """
-        output = subprocess.check_output(rf'reg query {KEYNAME}').decode(errors='ignore').replace(f'\r\n{KEYNAME}\r\n    ', '').split('\r\n')
+        output = subprocess.check_output(rf'reg query "{KEYNAME}"').decode(errors='ignore').split('\r\n')
         historico_de_registros = {}
 
         for linha in output[2:]:
@@ -110,8 +134,11 @@ class Registros:
                 pass
             else:
                 historico_de_registros[linha[0]] = linha[1]
-        
-        return historico_de_registros if nome == 'all' else historico_de_registros[nome]
+
+        if nome != 'all':
+            return historico_de_registros[nome]
+
+        return historico_de_registros
 
 
     def set(KEYNAME=KEYNAME, **kwargs) -> None:
@@ -120,11 +147,63 @@ class Registros:
             kwargs = kwargs['dict']
 
         for nome, dados in kwargs.items():
-            os.system(f'reg add {KEYNAME} /v {str(nome)} /d "{str(dados)}" /f')
+            os.system(f'reg add {KEYNAME} /v {str(nome)} /d "{str(dados)} " /f')
             
             if adm_exe:
                 adm()
                 adm_exe = False
+                
+HKEY_NAMES = dict(
+    HKCR = 'HKEY_CLASSES_ROOT',
+    HKCU = 'HKEY_CURRENT_USER',
+    HKLM = 'HKEY_LOCAL_MACHINE',
+    HKU = 'HKEY_USERS',
+    HKCC = 'HKEY_CURRENT_CONFIG',
+)
+
+HKEY_AS_ADM = [HKEY_NAMES['HKLM']]
+import winreg as _wreg
+
+class reg:
+    """ atualização da classe Registros """
+    def get(keyname=HKEY_NAMES['HKCU'], sub_key=r'SOFTWARE\CentralSuporte', name='ALL'):
+        output = subprocess.check_output(f'reg query "{keyname}\{sub_key}"').decode(errors='ignore').split('\r\n')
+        historico_de_registros = {}
+
+        for linha in output[2:]:
+            linha = linha.strip().split('    REG_SZ    ') # removendo espaço no início e separando chave de dados
+
+            try:
+                key = linha[0]
+                value = linha[1]
+                historico_de_registros[key] = value
+            except IndexError:
+                pass
+        
+        return historico_de_registros[name] if name != 'ALL' and name in historico_de_registros else historico_de_registros
+    
+    def set(keyname=HKEY_NAMES['HKCU'], sub_key=r'SOFTWARE\CentralSuporte', **kwargs) -> None:
+        """ para importar registros como dicionário, utilizar dict_values={...} """
+
+        if 'dict_values' in kwargs:
+            kwargs = kwargs['dict_values']
+
+        id_hkey = {
+            HKEY_NAMES['HKCR']: _wreg.HKEY_CLASSES_ROOT,
+            HKEY_NAMES['HKCU']: _wreg.HKEY_CURRENT_USER,
+            HKEY_NAMES['HKLM']: _wreg.HKEY_LOCAL_MACHINE,
+            HKEY_NAMES['HKU']: _wreg.HKEY_USERS,
+            HKEY_NAMES['HKCC']: _wreg.HKEY_CURRENT_CONFIG,
+        }
+        try:
+            _key = _wreg.OpenKey(id_hkey[keyname], sub_key, 0, _wreg.KEY_ALL_ACCESS)
+        except:
+            _key = _wreg.CreateKey(id_hkey[keyname], sub_key)
+        
+        for key, value in kwargs.items():
+            _wreg.SetValueEx(_key, key, 0, _wreg.REG_SZ, value)
+
+        _wreg.CloseKey(_key)
 #------------------------------------------------------------------------------------------------------
 #---------------------------------------File-----------------------------------------------------------
 class File:
@@ -152,19 +231,15 @@ class File:
                 return json.load(f)
         
         elif file_type in ('txt','csv'):
-            with open(fileName, 'r') as arquivo:
-                try:
-                    linhas, result = arquivo.readlines(), []
-                    for i in linhas:
-                        i = i.strip('\n')
-                        if ';' in i:
-                            i = i.split(';')
+            with open(fileName, 'r', errors='ignore') as arquivo:
+                linhas, result = arquivo.readlines(), []
+                for i in linhas:
+                    i = i.strip('\n')
+                    if ';' in i:
+                        i = i.split(';')
 
-                        result.append(i)
-                    return result
-
-                except UnicodeDecodeError:
-                    pass
+                    result.append(i)
+                return result
         return None # em caso de exceção UnicodeDecodeError ou tipo de arquivo não ser compatível
 
 
@@ -201,7 +276,13 @@ class File:
                             
                 elif type(dados) in (list, tuple):
                     for conteudo in dados:
-                        arquivo.write(str(conteudo) + '\n')
+                        if type(conteudo) in (list, tuple):
+                            for linha in conteudo:
+                                arquivo.write(str(linha) + ';')
+
+                            arquivo.write('\n')
+                        else:
+                            arquivo.write(str(conteudo) + '\n')
                 else:
                     arquivo.write(str(dados) + '\n')
 
@@ -239,5 +320,5 @@ class File:
     @property
     def path(self):
         """ local path """
-        return self._path
+        return __path__
 #------------------------------------------------------------------------------------------------------
