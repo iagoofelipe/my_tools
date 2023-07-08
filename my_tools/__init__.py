@@ -3,11 +3,14 @@ import sys, os, subprocess, json
 import win32com.shell.shell as shell
 
 __path__ = os.path.abspath('')
-__all__ = ('File', 'encode', 'Cpf', 'adm', 'Registros', 'resource_path')
+__all__ = ('true_in', 'get_cfg', 'reg_windows', 'resource_path', 'encode', 'adm', 'File', 'Cpf', 'Registros')
 
 """ 
 Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .json, .csv, manipulação de registros Windows e mais.
 
+    - true_in
+    - get_cfg
+    - reg_windows
     - resource_path
     - encode
     - adm
@@ -15,6 +18,7 @@ Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .jso
     - Registros
         get - pega valor em chave de registro
         set - define valor em chave registro
+    - reg
     - File    
         isFile - verifica se arquivo existe
         getFile - retorna conteúdo de um arquivo como lista
@@ -23,16 +27,23 @@ Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .jso
 
 
 """
-
-def get_cfg(fileName=r'\\TRUENAS\suporte\SUPORTE\CentralSuporte\settings.cfg'):
+#---------------------------------------TRUE_IN-------------------------------------------------------
+def true_in(iteravel):
+    """ retorna caso haja pelo menos um valor `True` em lista ou conteúdos de iterável (como dicionário) """
+    if type(iteravel) in (list, tuple):
+        return True in iteravel
+    
+    return True in list(map(lambda key: iteravel[key], iteravel))
+#-----------------------------------------------------------------------------------------------------
+#-----------------------------------------GET_CFG-----------------------------------------------------
+def get_cfg(fileName):
     import configparser
-
     config = configparser.ConfigParser()
     config.read(fileName)
     
-    return config.defaults()
-
-#--------------------------------------WIN-PATH--------------------------------------------------------
+    return config
+#-----------------------------------------------------------------------------------------------------
+#--------------------------------------reg_windows-------------------------------------------------------
 def _winreg(nome):
     from winreg import OpenKey, QueryValueEx, HKEY_CURRENT_USER, KEY_ALL_ACCESS
     
@@ -47,7 +58,7 @@ reg_windows = dict(
     USERNAME = _winreg('USERNAME'),
     USERPROFILE = _winreg('USERPROFILE'),
 )
-#------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------
 #-----------------------------------RESOURCE-PATH-----------------------------------------------------
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -118,11 +129,9 @@ class Cpf:
         return True
 #------------------------------------------------------------------------------------------------------
 #--------------------------------------Registro--------------------------------------------------------
-KEYNAME =  r'HKEY_LOCAL_MACHINE\SOFTWARE\CentralSuporte'
-
 class Registros:
     """ Dados armazenados no Editor de Registro do Windows """
-    def get(KEYNAME=KEYNAME, nome='all') -> dict | str:
+    def get(KEYNAME=r'HKEY_LOCAL_MACHINE\SOFTWARE\CentralSuporte', nome='all') -> dict | str:
         """ lendo dados de registro """
         output = subprocess.check_output(rf'reg query "{KEYNAME}"').decode(errors='ignore').split('\r\n')
         historico_de_registros = {}
