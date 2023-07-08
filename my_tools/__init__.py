@@ -240,7 +240,7 @@ class File:
                 return json.load(f)
         
         elif file_type in ('txt','csv'):
-            with open(fileName, 'r', errors='ignore') as arquivo:
+            with open(fileName, 'r', encoding='utf-8', errors='ignore') as arquivo:
                 linhas, result = arquivo.readlines(), []
                 for i in linhas:
                     i = i.strip('\n')
