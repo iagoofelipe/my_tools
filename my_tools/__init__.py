@@ -269,7 +269,7 @@ class File:
                 json.dump(dados, f, ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
         elif file_type in ('txt', 'csv'):
-            with open(fileName, 'w') as arquivo:
+            with open(fileName, 'w', encoding='utf-8') as arquivo:
                 if type(dados) == dict:
                     for chave in dados:
                         conteudo = dados[chave]
