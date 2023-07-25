@@ -3,11 +3,12 @@ import sys, os, subprocess, json
 import win32com.shell.shell as shell
 
 __path__ = os.path.abspath('')
-__all__ = ('true_in', 'get_cfg', 'reg_windows', 'resource_path', 'encode', 'adm', 'File', 'Cpf', 'Registros')
+__all__ = ('list_frequencias', 'true_in', 'get_cfg', 'reg_windows', 'resource_path', 'encode', 'adm', 'File', 'Cpf', 'Registros')
 
 """ 
 Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .json, .csv, manipulação de registros Windows e mais.
 
+    - list_frequencias
     - true_in
     - get_cfg
     - reg_windows
@@ -27,6 +28,15 @@ Conjunto personalizado de ferramentas para manipulações de arquivos .txt, .jso
 
 
 """
+#---------------------------------------LIST_FREQUENCIAS----------------------------------------------
+def list_frequencias(__Iterable, __value):
+    retorno = 0
+    for i in __Iterable:
+        if __value in i:
+            retorno += 1
+
+    return retorno
+#-----------------------------------------------------------------------------------------------------
 #---------------------------------------TRUE_IN-------------------------------------------------------
 def true_in(iteravel):
     """ retorna caso haja pelo menos um valor `True` em lista ou conteúdos de iterável (como dicionário) """
@@ -150,7 +160,7 @@ class Registros:
         return historico_de_registros
 
 
-    def set(KEYNAME=KEYNAME, **kwargs) -> None:
+    def set(KEYNAME=r'HKEY_LOCAL_MACHINE\SOFTWARE\CentralSuporte', **kwargs) -> None:
         adm_exe = True
         if 'dict' in kwargs:
             kwargs = kwargs['dict']
